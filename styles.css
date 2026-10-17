@@ -5,7 +5,7 @@ html, body { margin:0; height:100%; font:15px system-ui, sans-serif; background:
 .bar, .hud, .layers { position:absolute; z-index:1000; background:rgba(15,23,42,.88); backdrop-filter:blur(6px); color:var(--fg); }
 .bar { top:0; left:0; right:0; display:flex; gap:12px; align-items:center; padding:max(8px, env(safe-area-inset-top)) var(--pad) 8px; }
 .bar #status { flex:1; font-size:12px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bar #status.err { color:#fca5a5; opacity:1; }
+.bar #status.err { color:#fca5a5; opacity:1; white-space:normal; font-size:11px; cursor:pointer; }
 button { font:inherit; color:inherit; background:#1e293b; border:1px solid #334155; border-radius:8px; padding:8px 12px; cursor:pointer; }
 button.on { background:var(--accent); border-color:var(--accent); color:#111; }
 .layers { top:56px; left:var(--pad); padding:8px 10px; border-radius:10px; display:flex; flex-direction:column; gap:6px; font-size:13px; }

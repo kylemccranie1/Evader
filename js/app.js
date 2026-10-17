@@ -52,7 +52,8 @@ async function initZones() {
     zones = r.zones; simRoads = r.roads; drawZones();
     setStatus(`Zones: ${zones.length} found (${r.railCount} rails mapped${r.usedExitNodes ? '' : ', exit bounds approx.'})`);
   } catch (e) {
-    setStatus(cached ? 'Zones: offline, using cache' : `Zones failed: ${e.message}`, !cached);
+    console.error('Zone load failed:', e.message);
+    setStatus(cached ? 'Zones: refresh failed, using cache' : `Zones failed (tap to retry): ${e.message}`, !cached);
   }
 }
 
@@ -172,6 +173,7 @@ function toggleSim() {
 }
 
 // ---- UI ----------------------------------------------------------------
+$('status').onclick = () => { if ($('status').classList.contains('err')) initZones(); };
 function setStatus(t, err = false) { const s = $('status'); s.textContent = t; s.classList.toggle('err', err); }
 
 $('follow').onclick = () => { follow = !follow; $('follow').classList.toggle('on', follow); if (follow && me) map.setView([me.lat, me.lon], 15); };

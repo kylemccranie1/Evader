@@ -10,33 +10,55 @@ export const CORRIDOR = {
 
 const ENDPOINTS = [
   'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
   'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.openstreetmap.fr/api/interpreter',
 ];
 const CACHE_KEY = 'evader.zones.v1';
 const MAX_AGE_MS = 30 * 24 * 3600 * 1000;
+const ATTEMPT_TIMEOUT_MS = 45000;
 
+// Only fetch guardrails within 40 m of I-10 (not the whole bbox): far lighter for public
+// Overpass servers, which reject or time out heavy queries.
 function query({ south, west, north, east }) {
   const b = `${south},${west},${north},${east}`;
-  return `[out:json][timeout:90];
-way["highway"="motorway"]["ref"~"(^|;)I[ -]?10($|;)"](${b});out geom;
-way["barrier"="guard_rail"](${b});out geom;
+  return `[out:json][timeout:40];
+way["highway"="motorway"]["ref"~"(^|;)I[ -]?10($|;)"](${b})->.road;
+.road out geom;
+way["barrier"="guard_rail"](around.road:40);out geom;
 node["highway"="motorway_junction"]["ref"~"^(${CORRIDOR.exits.join('|')})$"](${b});out;`;
 }
 
+const host = (url) => new URL(url).hostname;
+
+async function overpassOnce(url, q) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ATTEMPT_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(q),
+      signal: ctl.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    // Overpass can answer 200 with a runtime error and partial/no data.
+    if (/runtime error|timed out|out of memory/i.test(json.remark || '')) throw new Error(json.remark);
+    return json;
+  } catch (e) {
+    throw new Error(e.name === 'AbortError' ? 'timed out' : e.message);
+  } finally { clearTimeout(timer); }
+}
+
+/** Try each mirror in turn; on total failure the error lists what every server said. */
 async function overpass(q) {
-  let lastErr;
+  const errors = [];
   for (const url of ENDPOINTS) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'data=' + encodeURIComponent(q),
-      });
-      if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
-      return await res.json();
-    } catch (e) { lastErr = e; }
+    try { return await overpassOnce(url, q); }
+    catch (e) { errors.push(`${host(url)}: ${e.message}`); }
   }
-  throw lastErr;
+  throw new Error(errors.join(' | '));
 }
 
 export function readCache() {
