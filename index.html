@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Evader</title>
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="map"></div>
+
+<header class="bar">
+  <strong>Evader</strong>
+  <span id="status">Starting…</span>
+  <button id="openSettings" aria-label="Settings">⚙</button>
+</header>
+
+<div id="alert" class="alert" hidden role="status" aria-live="polite"></div>
+
+<div class="layers">
+  <label><input type="checkbox" id="togglePolice" checked> 🚔 Police <b id="copCount">0</b> <small id="copSource"></small></label>
+  <label><input type="checkbox" id="toggleZones" checked> <i class="swatch"></i> Guardrail both sides <b id="zoneCount">0</b></label>
+</div>
+
+<footer class="hud">
+  <div class="speed"><b id="speed">--</b><small>mph</small></div>
+  <button id="follow" aria-label="Follow my position">◎ Follow</button>
+  <button id="corridor">I-10 Holt → DeFuniak</button>
+  <button id="sim" title="Simulate driving the corridor">▶ Sim</button>
+</footer>
+
+<dialog id="settings">
+  <form method="dialog">
+    <h3>Settings</h3>
+    <label>Waze-format police feed URL
+      <input id="feedUrl" type="url" placeholder="https://…?top={top}&bottom={bottom}&left={left}&right={right}">
+    </label>
+    <p class="hint">Leave blank for demo reports. Use a feed you are authorised to use (e.g. Waze for Cities).</p>
+    <label>Police alert radius (km) <input id="alertPolice" type="number" min="0.5" max="20" step="0.5"></label>
+    <menu><button value="cancel">Cancel</button><button id="saveSettings" value="ok">Save</button></menu>
+  </form>
+</dialog>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
