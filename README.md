@@ -14,6 +14,12 @@ npm test         # geometry / zone-detection tests
 
 Tap **▶ Sim** to drive the corridor without GPS.
 
+## Deploy (GitHub Pages)
+
+`.github/workflows/pages.yml` runs the tests and publishes the static site on every push to `main` (or manually via *Actions → Deploy to GitHub Pages → Run workflow*).
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site is then at `https://<user>.github.io/Evader/`. All paths are relative, so the subpath works, and Pages serves HTTPS, which GPS and service workers require.
+
 ## How the guardrail zones work
 
 On first load the app queries OpenStreetMap (Overpass API) for I-10 carriageways, `barrier=guard_rail` ways and the exit 56/85 junctions. `js/geo.js` samples each carriageway every 15 m and marks a point when a roughly-parallel rail lies within 22 m on **both** sides relative to travel direction. Runs are merged across small gaps and clipped to the two exits. Results are cached in `localStorage` for 30 days (works offline).
